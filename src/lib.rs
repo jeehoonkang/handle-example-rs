@@ -69,6 +69,10 @@ impl Logger {
         self.lines.push(line);
     }
 
+    /// Flush the buffer.
+    ///
+    /// Flushes any buffered log lines, printing them to stdout. These lines may be interpositioned
+    /// arbitrarily with lines printed from other handles.
     pub fn flush(&mut self) {
         let mut guard = self.global.lock().unwrap();
         guard.extend(&mut self.lines);
@@ -112,6 +116,10 @@ pub fn log(line: String) {
     }
 }
 
+/// Flush the buffer.
+///
+/// Flushes any buffered log lines, printing them to stdout. These lines may be interpositioned
+/// arbitrarily with lines printed from other threads.
 pub fn flush() {
     if TLS_HANDLE.try_with(|handle| unsafe { (&mut *handle.get()).flush() }).is_err() {
         GLOBAL_HANDLE.flush_global();
