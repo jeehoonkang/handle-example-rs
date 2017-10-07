@@ -4,4 +4,6 @@ version = "0.1.0"
 authors = ["Joshua Liebow-Feeser <hello@joshlf.com>"]
 
 [dependencies]
+crossbeam-epoch = { git = "https://github.com/jeehoonkang/crossbeam-epoch.git", branch = "handle" }
+crossbeam-utils = "0.1"
 lazy_static = "0.2"
