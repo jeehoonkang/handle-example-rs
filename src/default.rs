@@ -16,7 +16,7 @@ impl Handle {
 
 impl Drop for Handle {
     fn drop(&mut self) {
-        unsafe { self.0.finalize(&GLOBAL) }
+        unsafe { self.0.unregister(&GLOBAL) }
     }
 }
 

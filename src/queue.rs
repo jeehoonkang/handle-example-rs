@@ -69,7 +69,7 @@ impl<T> Queue<T> {
         &'scope self,
         onto: Ptr<Node<T>>,
         new: Ptr<Node<T>>,
-        scope: Scope<'scope>,
+        scope: &'scope Scope,
     ) -> bool {
         // is `onto` the actual tail?
         let o = unsafe { onto.deref() };
@@ -92,7 +92,7 @@ impl<T> Queue<T> {
     }
 
     /// Adds `t` to the back of the queue, possibly waking up threads blocked on `pop`.
-    pub fn push<'scope>(&'scope self, t: T, scope: Scope<'scope>) {
+    pub fn push<'scope>(&'scope self, t: T, scope: &'scope Scope) {
         let new = Owned::new(Node {
             data: ManuallyDrop::new(t),
             next: Atomic::null(),
@@ -112,7 +112,7 @@ impl<T> Queue<T> {
 
     /// Attempts to pop a data node. `Ok(None)` if queue is empty; `Err(())` if lost race to pop.
     #[inline(always)]
-    fn pop_internal<'scope>(&'scope self, scope: Scope<'scope>) -> Result<Option<T>, ()> {
+    fn pop_internal<'scope>(&'scope self, scope: &'scope Scope) -> Result<Option<T>, ()> {
         let head = self.head.load(Acquire, scope);
         let h = unsafe { head.deref() };
         let next = h.next.load(Acquire, scope);
@@ -133,7 +133,7 @@ impl<T> Queue<T> {
     /// Attempts to dequeue from the front.
     ///
     /// Returns `None` if the queue is observed to be empty.
-    pub fn try_pop<'scope>(&'scope self, scope: Scope<'scope>) -> Option<T> {
+    pub fn try_pop<'scope>(&'scope self, scope: &'scope Scope) -> Option<T> {
         loop {
             if let Ok(head) = self.pop_internal(scope) {
                 return head;
@@ -159,10 +159,9 @@ impl<T> Drop for Queue<T> {
 
 #[cfg(test)]
 mod test {
-    use epoch::pin;
-    use crossbeam_utils::scoped;
-
     use super::*;
+    use crossbeam_utils::scoped;
+    use epoch::pin;
 
     struct Queue<T> {
         queue: super::Queue<T>,

@@ -39,7 +39,7 @@ impl Handle {
     /// The logged line may be buffered. To force buffered lines to be printed, use `flush`.
     #[inline]
     pub fn log(&mut self, line: String) {
-        self.local.log(&self.global, line)
+        unsafe { self.local.log(&self.global, line) }
     }
 
     /// Flush the buffer.
@@ -48,12 +48,12 @@ impl Handle {
     /// arbitrarily with lines printed from other handles.
     #[inline]
     pub fn flush(&mut self) {
-        self.local.flush(&self.global)
+        unsafe { self.local.flush(&self.global) }
     }
 }
 
 impl Drop for Handle {
     fn drop(&mut self) {
-        unsafe { self.local.finalize(&self.global); }
+        unsafe { self.local.unregister(&self.global); }
     }
 }
